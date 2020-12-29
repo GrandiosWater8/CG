@@ -1,0 +1,132 @@
+<html lang="en">
+
+<title>Задание №5</title>
+
+<body>
+<canvas id='lab05' height='500' width='500' style='border:1px solid'></canvas>
+
+<script>
+    let canvas = document.getElementById('lab05');
+    let ctx = canvas.getContext('2d');
+
+    let x0 = 10;
+    let y0 = 10;
+    let x1 = 221;
+    let y1 = 149;
+    let pts = [];
+
+    function Line(ctx, x0, y0, x1, y1) {
+        let dy = Math.abs(y1 - y0);
+        let dx = Math.abs(x1 - x0);
+        let dmax = Math.max(dx, dy);
+        let dmin = Math.min(dx, dy);
+        let xdir = 1;
+        if (x1 < x0) xdir = -1;
+        let ydir = 1;
+        if (y1 < y0) ydir = -1;
+        let eps = 0;
+        let s = 1;
+        let k = 2 * dmin;
+        if (dy <= dx) {
+            let y = y0;
+            for (let x = x0; x * xdir <= x1 * xdir; x += xdir) {
+                ctx.fillRect(x * s, y * s, 2 * s, 2 * s);
+                eps = eps + k;
+                if (eps > dmax) {
+                    y += ydir;
+                    eps = eps - 2 * dmax;
+                }
+            }
+        } else {
+            let x = x0;
+            for (let y = y0; y * ydir <= y1 * ydir; y += ydir) {
+                ctx.fillRect(x * s, y * s, 2 * s, 2 * s);
+                eps = eps + k;
+                if (eps > dmax) {
+                    x += xdir;
+                    eps = eps - 2 * dmax;
+                }
+            }
+        }
+    }
+
+    function intersect(ctx, xa, ya, xb, yb, xp1, yp1, xp2, yp2) {
+        let t = ((ya - yp1) * (xp2 - xp1) - (xa - xp1) * (yp2 - yp1)) /
+            ((xb - xa) * (yp2 - yp1) - (yb - ya) * (xp2 - xp1));
+        let sign = 1;
+        if ((xb - xa) * (yp2 - yp1) - (yb - ya) * (xp2 - xp1) < 0) {
+            sign = -1
+        }
+        return {t, sign};
+    }
+
+    let point_index = 0, pos_index = 0, neg_index = 0, N = 4;
+    let pos = [];
+    let neg = [];
+    let state = 0;
+
+    canvas.addEventListener("contextmenu", function () {
+        console.log("contextmenu");
+        if (state === 0) {
+            state = 1;
+            Line(ctx, pts[0], pts[1], pts[(point_index - 1) * 2], pts[(point_index - 1) * 2 + 1]);
+        }
+    });
+    
+    canvas.addEventListener("click", function (e) {
+        if (state === 0) {
+            pts[point_index * 2] = e.offsetX;
+            pts[point_index * 2 + 1] = e.offsetY;
+            console.log(pts);
+            if (point_index > 0) {
+                Line(ctx, pts[(point_index - 1) * 2],
+                    pts[(point_index - 1) * 2 + 1], pts[point_index * 2], pts[point_index * 2 + 1]);
+            }
+            ++point_index;
+        } else if (state === 1) {
+
+            x0 = e.offsetX;
+            y0 = e.offsetY;
+            ctx.fillRect(x0, y0, 3, 3);
+            ++state;
+        } else if (state === 2) {
+            x1 = e.offsetX;
+            y1 = e.offsetY;
+            ctx.fillRect(x1, y1, 3, 3);
+            let xx1 = pts[0] - pts[2],
+                yy1 = pts[1] - pts[3],
+                xx2 = pts[4] - pts[6],
+                yy2 = pts[5] - pts[7];
+            for (let i = 0; i < point_index; ++i) {
+                let j = i + 1;
+                if (j === point_index) j = 0;
+                let res = intersect(ctx, x0, y0, x1, y1, pts[i * 2], pts[i * 2 + 1], pts[j * 2], pts[j * 2 + 1]);
+                res.sign > 0 ? pos[pos_index++] = res.t : neg[neg_index++] = res.t;
+            }
+            console.log(pos);
+            console.log(neg);
+            let start = pos.sort()[pos.length - 1];
+            let end = neg.sort()[0];
+            if (xx1 * yy2 - yy1 * xx2 > 0) {
+                console.log(true);
+                start = pos.sort()[0];
+                end = neg.sort()[neg.length - 1];
+            }
+            console.log(pos);
+            console.log(neg);
+            Line(ctx, start * (x1 - x0) + x0, start * (y1 - y0) + y0,
+                end * (x1 - x0) + x0, end * (y1 - y0) + y0);
+            state = 0;
+            pts = [];
+            point_index = 0;
+            pos_index = 0;
+            neg_index = 0;
+            pos = [];
+            neg = [];
+        }
+    });
+
+</script>
+
+</body>
+</html>

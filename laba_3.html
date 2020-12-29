@@ -1,0 +1,71 @@
+<html>
+
+<title>Задание №3</title>
+
+<body>
+
+<canvas id='lab03' height='500' width='500' style='border:1px solid'></canvas>
+
+<script>
+    let canvas = document.getElementById('lab03');
+    let ctx = canvas.getContext('2d');
+
+    let x0 = 10;
+    let y0 = 10;
+    let x1 = 221;
+    let y1 = 149;
+
+    function Line(ctx, x0, y0, x1, y1) {
+        let flag = Math.abs(y1 - y0) - x1 + x0 > 0;
+
+        if (flag) {
+            [x0, y0] = [y0, x0];
+            [x1, y1] = [y1, x1];
+            if (x1 < x0) {
+                [x0, x1] = [x1, x0];
+                [y0, y1] = [y1, y0];
+            }
+        }
+
+        let delta = 2 * Math.abs(y1 - y0);
+
+        let eps = 0;
+        let scale = 1;
+
+        let y = y0;
+        for (let x = x0; x <= x1; x++) {
+            eps += delta;
+            if (eps >= (x1 - x0)) {
+                eps -= 2 * (x1 - x0);
+                if (y1 >= y0)
+                    y++;
+                else
+                    y--;
+            }
+            if (flag)
+                ctx.fillRect(y * scale, x * scale, scale, scale);
+            else
+                ctx.fillRect(x * scale, y * scale, scale, scale);
+        }
+    }
+
+    let point_index = 0;
+    canvas.addEventListener("click", function (e) {
+        if (point_index === 0) {
+            x0 = e.offsetX;
+            y0 = e.offsetY;
+            point_index = 1;
+        } else {
+            x1 = e.offsetX;
+            y1 = e.offsetY;
+            if (x1 < x0) {
+                [x0, x1] = [x1, x0];
+                [y0, y1] = [y1, y0];
+            }
+            Line(ctx, x0, y0, x1, y1);
+            point_index = 0;
+        }
+    });
+</script>
+</body>
+</html>

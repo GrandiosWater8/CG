@@ -1,0 +1,148 @@
+<html lang="en">
+
+<title>Задание №4</title>
+
+<body>
+<p>Original</p>
+<canvas id='lab04' height='667' width='1000' style='border:1px solid'></canvas>
+
+<p><a href='#' class='batton' id='btn01'>Bell</a></p>
+<canvas id='lab04_2' height='667' width='1000' style='border:1px solid'></canvas>
+
+<p><a href='#' class='batton' id='btn02'>Sobel</a></p>
+<canvas id='lab04_3' height='667' width='1000' style='border:1px solid'></canvas>
+
+<p><a href='#' class='batton' id='btn03'>Sobel-Bell</a></p>
+<canvas id='lab04_4' height='667' width='1000' style='border:1px solid'></canvas>
+
+
+<script>
+    let canvas = document.getElementById('lab04');
+    let ctx = canvas.getContext('2d');
+
+    let canvas2 = document.getElementById('lab04_2');
+    let ctx2 = canvas2.getContext('2d');
+
+    let canvas3 = document.getElementById('lab04_3');
+    let ctx3 = canvas3.getContext('2d');
+
+    let canvas4 = document.getElementById('lab04_4');
+    let ctx4 = canvas4.getContext('2d');
+
+    let img = new Image();
+    img.src = 'test.jpg';
+
+    img.onload = function () {
+        ctx.drawImage(img, 0, 0);
+        let img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        console.log(img_data);
+        let img_data2 = ctx2.getImageData(0, 0, canvas.width, canvas.height);
+
+        let img_data3 = ctx3.getImageData(0, 0, canvas.width, canvas.height);
+
+        let img_data4 = ctx4.getImageData(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < canvas.height; ++i) {
+            for (let j = 0; j < canvas.width; ++j) {
+                for (let k = 0; k < 3; ++k) {
+                    let p = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    p[0] = img_data.data[4 * ((i - 1) * canvas.width + j - 1) + k];
+                    p[1] = img_data.data[4 * ((i - 1) * canvas.width + j) + k];
+                    p[2] = img_data.data[4 * ((i - 1) * canvas.width + j + 1) + k];
+
+                    p[3] = img_data.data[4 * ((i) * canvas.width + j - 1) + k];
+                    p[4] = img_data.data[4 * ((i) * canvas.width + j) + k];
+                    p[5] = img_data.data[4 * ((i) * canvas.width + j + 1) + k];
+
+                    p[6] = img_data.data[4 * ((i + 1) * canvas.width + j - 1) + k];
+                    p[7] = img_data.data[4 * ((i + 1) * canvas.width + j) + k];
+                    p[8] = img_data.data[4 * ((i + 1) * canvas.width + j + 1) + k];
+
+                    img_data2.data[4 * (i * canvas.width + j) + k] =
+                     (p[0] + p[2] + p[6] + p[8] + 2 * (p[1] + p[3] + p[5] + p[7]) + 4 * p[4]) / 16; // S;
+                }
+                img_data2.data[4 * (i * canvas.width + j) + 3] = 255;
+            }
+        }
+        ctx2.putImageData(img_data2, 0, 0);
+
+        for (let i = 0; i < canvas.height; ++i) {
+            for (let j = 0; j < canvas.width; ++j) {
+                for (let k = 0; k < 3; ++k) {
+                    let p = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    p[0] = img_data.data[4 * ((i - 1) * canvas.width + j - 1) + k];
+                    p[1] = img_data.data[4 * ((i - 1) * canvas.width + j) + k];
+                    p[2] = img_data.data[4 * ((i - 1) * canvas.width + j + 1) + k];
+
+                    p[3] = img_data.data[4 * ((i) * canvas.width + j - 1) + k];
+                    p[4] = img_data.data[4 * ((i) * canvas.width + j) + k];
+                    p[5] = img_data.data[4 * ((i) * canvas.width + j + 1) + k];
+
+                    p[6] = img_data.data[4 * ((i + 1) * canvas.width + j - 1) + k];
+                    p[7] = img_data.data[4 * ((i + 1) * canvas.width + j) + k];
+                    p[8] = img_data.data[4 * ((i + 1) * canvas.width + j + 1) + k];
+
+                    let Sx = (-1) * p[0] + (0) * p[1] + (1) * p[2]
+                        + (-2) * p[3] + (0) * p[4] + 2 * p[5]
+                        + (-1) * p[6] + (0) * p[7] + 2 * p[8];
+
+                    let Sy = (-1) * p[0] + (-2) * p[1] + (-1) * p[2]
+                        + (0) * p[3] + (0) * p[4] + (0) * p[5]
+                        + (1) * p[6] + (2) * p[7] + (1) * p[8];
+
+                    let S = Math.sqrt(Sx * Sx + Sy * Sy);
+                    S < 128 ? S = 0 : S = S;
+
+                    img_data3.data[4 * (i * canvas.width + j) + k] = S;
+                }
+                img_data3.data[4 * (i * canvas.width + j) + 3] = 255;
+            }
+        }
+        ctx3.putImageData(img_data3, 0, 0);
+
+        for (let i = 0; i < canvas.height; ++i) {
+            for (let j = 0; j < canvas.width; ++j) {
+                for (let k = 0; k < 3; ++k) {
+                    let p = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    p[0] = img_data3.data[4 * ((i - 1) * canvas.width + j - 1) + k];
+                    p[1] = img_data3.data[4 * ((i - 1) * canvas.width + j) + k];
+                    p[2] = img_data3.data[4 * ((i - 1) * canvas.width + j + 1) + k];
+
+                    p[3] = img_data3.data[4 * ((i) * canvas.width + j - 1) + k];
+                    p[4] = img_data3.data[4 * ((i) * canvas.width + j) + k];
+                    p[5] = img_data3.data[4 * ((i) * canvas.width + j + 1) + k];
+
+                    p[6] = img_data3.data[4 * ((i + 1) * canvas.width + j - 1) + k];
+                    p[7] = img_data3.data[4 * ((i + 1) * canvas.width + j) + k];
+                    p[8] = img_data3.data[4 * ((i + 1) * canvas.width + j + 1) + k];
+
+                    img_data4.data[4 * (i * canvas.width + j) + k] =
+                        (p[0] + p[2] + p[6] + p[8] + 2 * (p[1] + p[3] + p[5] + p[7]) + 4 * p[4]) / 16; // S;
+                }
+                img_data4.data[4 * (i * canvas.width + j) + 3] = 255;
+            }
+        }
+        ctx4.putImageData(img_data4, 0, 0);
+    }
+
+    let btn = document.getElementById('btn01');
+    btn.addEventListener('click', function (e) {
+        btn.href = canvas2.toDataURL('image/png');
+        btn.download = 'Bell.png';
+    });
+
+    let btn1 = document.getElementById('btn02');
+    btn1.addEventListener('click', function (e) {
+        btn1.href = canvas3.toDataURL('image/png');
+        btn1.download = 'Sobel.png';
+    });
+
+    let btn2 = document.getElementById('btn03');
+    btn2.addEventListener('click', function (e) {
+        btn2.href = canvas4.toDataURL('image/png');
+        btn2.download = 'Sobel-Bell.png';
+    });
+</script>
+
+</body>
+</html>

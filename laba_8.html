@@ -1,0 +1,137 @@
+<html lang="ru">
+<title>lab_08</title>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="margin: 0;">
+    <p><input type="file"></p>
+    <canvas id="canv1" ></canvas>
+
+<script>
+    var canv = document.getElementById("canv1")
+    var ctx = canv.getContext('2d')
+    var listOfItems = document.getElementById("scale_list")
+    canv.width = window.innerWidth
+    canv.height = window.innerHeight
+
+    ctx.strokeRect(0,0,canv.width,canv.height)
+
+    var x_shift = canv.width / 2
+    var y_shift = canv.height / 2
+    var objScale = 1
+
+
+    var surfs = []
+    var vertices = []
+
+    
+    function drawFigure() {
+        ctx.fillStyle = "green"
+        ctx.arc(x_shift,y_shift,5,0,Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = "grey"
+        surfs.forEach(surf => {
+            var size = surf.length
+            for(var vtx_ind = 0; vtx_ind < size; ++vtx_ind) {
+                var lineStart = vertices[surf[vtx_ind]-1]
+                var EndOfLine = 0;
+                if(vtx_ind === size-1)
+                    EndOfLine = vertices[surf[0]-1]
+                else
+                    EndOfLine = vertices[surf[vtx_ind+1]-1]
+                if(lineStart === undefined || EndOfLine === undefined) {
+                    continue
+                }
+                var x0 = objScale * lineStart[0]+x_shift
+                var y0 = y_shift - objScale * lineStart[1]
+                var x1 = objScale * EndOfLine[0]+x_shift
+                var y1 = y_shift - objScale * EndOfLine[1]
+
+                drawLine(x0,y0,x1,y1);
+            }
+        })
+    }
+function  drawLine(x0, y0, x1, y1) {
+
+      
+        const dX = (x1 - x0 >= 0 ? 1 : -1);
+        const dY = (y1 - y0 >= 0 ? 1 : -1);
+        const deltaX = Math.abs(x1 - x0);
+        const deltaY = Math.abs(y1 - y0);
+        let length = Math.max(deltaX, deltaY);
+        let error = 0;
+        if (length === 0) {
+            ctx.fillRect(x0, y0, 1, 1);
+                       
+        }
+        let x = x0;
+        let y = y0;
+
+        if (deltaY <= deltaX) {
+            while (length-- > 0) {
+                error += 2 * deltaY;
+                ctx.fillRect(x, y, 1, 1);
+                if (error >= deltaX) {
+                    y += dY
+                    error -= 2 * deltaX;
+                }
+                x += dX;
+            }
+
+        } else {
+            while (length-- > 0) {
+                error += 2 * deltaX;
+               ctx.fillRect(x, y, 1, 1);
+                
+                if (error >= deltaY) {
+                    x += dX
+                    error -= 2 * deltaY;
+                }
+                y += dY;
+
+            }
+        }
+        
+    }
+    const input = document.querySelector('input[type="file"]')
+    input.addEventListener('change', function (e) {
+        const reader = new FileReader()
+        reader.onload = function () {
+            const lines = reader.result.split('\n')
+
+            for(var line_ind = 0; line_ind < lines.length;++line_ind) {
+                var re = /\s+/
+                var params = lines[line_ind].split(re);
+
+                if(params[0] === "v") {
+                    vertices.push([parseFloat(params[1]),parseFloat(params[2]),parseFloat(params[3])])
+                }
+
+                if(params[0] === "f") {
+                    var list = []
+                    for(var vtx_ind = 1; vtx_ind < params.length; ++vtx_ind) {
+                        list.push(parseInt(params[vtx_ind]))
+                    }
+                    surfs.push(list)
+                }
+            }
+            drawFigure()
+            surfs = []
+            vertices = []
+        }
+        reader.readAsText(input.files[0])
+
+
+
+    }, false)
+
+    function setScale(scale) {
+        objScale = parseFloat(scale.value);
+        alert("successful changed scale to : "+objScale)
+    }
+
+ 
+</script>
+
+</body>
+</html>
